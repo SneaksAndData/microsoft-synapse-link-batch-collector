@@ -26,7 +26,6 @@ jobs:
           install_extras: "all"
       - name: Black
         shell: bash
-        working-directory: batchcollector
         run: |
           set -e
           poetry run black . --check --diff
