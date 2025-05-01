@@ -1,11 +1,11 @@
-name: Build Container Image (BatchCollector)
+name: Build Container Image
 run-name: Build Synapse Batch Collector Image for GHCR from ${{ github.ref }} by @${{ github.actor }}
 
 on: workflow_dispatch
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: sneaksanddata/microsoft-synapse-link-batch-collector # need lowercase here
+  IMAGE_NAME: ${{ github.repository }} # need lowercase here
 
 jobs:
   build_image:
@@ -54,7 +54,7 @@ jobs:
         uses: docker/build-push-action@v6.9.0
         with:
           context: .
-          file: .container/Dockerfile.batchcollector
+          file: .container/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

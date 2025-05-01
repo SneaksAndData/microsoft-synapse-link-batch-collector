@@ -4,13 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - batchcollector/**
   pull_request:
     branches:
       - main
-    paths:
-      - batchcollector/**
 
 permissions:
   pull-requests: write
@@ -32,7 +28,6 @@ jobs:
         with:
           install_extras: all
       - name: Unit test
-        working-directory: batchcollector
         run: |
           set -euxo pipefail
 

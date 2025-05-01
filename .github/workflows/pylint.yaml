@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - batchcollector/**
 
 jobs:
   validate_code:
@@ -26,7 +24,6 @@ jobs:
         with:
           install_extras: "all"
       - name: Lint code
-        working-directory: batchcollector
         run: |
           set -e
           find ./ecco_return_optimizer_crystal_solver -type f -name "*.py" | xargs poetry run pylint
