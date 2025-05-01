@@ -19,7 +19,7 @@ pytest-mock = "~3.6.1"
 pytest-xdist = "~3.5.0"
 pytest-cov = "~2.12"
 pylint = "^3"
-black = "^23"
+black = "^24"
 
 [tool.black]
 line-length = 120
