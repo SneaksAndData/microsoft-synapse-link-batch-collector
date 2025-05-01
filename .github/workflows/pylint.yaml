@@ -26,4 +26,4 @@ jobs:
       - name: Lint code
         run: |
           set -e
-          find ./ecco_return_optimizer_crystal_solver -type f -name "*.py" | xargs poetry run pylint
+          find ./microsoft_synapse_batch_collector -type f -name "*.py" | xargs poetry run pylint
