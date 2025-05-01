@@ -1,0 +1,32 @@
+name: Validate code linting
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - batchcollector/**
+
+jobs:
+  validate_code:
+    name: Validate code linting
+    runs-on: ubuntu-latest
+
+    if: ${{ github.ref != 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11.x'
+          architecture: 'x64'
+      - name: Install Poetry and dependencies
+        uses: SneaksAndData/github-actions/install_poetry@v0.1.9
+        with:
+          install_extras: "all"
+      - name: Lint code
+        working-directory: batchcollector
+        run: |
+          set -e
+          find ./ecco_return_optimizer_crystal_solver -type f -name "*.py" | xargs poetry run pylint
