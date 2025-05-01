@@ -23,7 +23,7 @@ def main(config: RunConfig):
     """
     synapse_client = create_synapse_client(config.synapse_source_path)
     logger = setup_logger()
-    metrics_provider = DatadogMetricsProvider(metric_namespace="synapse_batch_collector")
+    metrics_provider = DatadogMetricsProvider.uds(metric_namespace="synapse_batch_collector")
 
     for synapse_batch in upload_batches(
         source=config.synapse_source_path,
