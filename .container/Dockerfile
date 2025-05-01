@@ -9,7 +9,7 @@ RUN apt-get update \
 
 WORKDIR /app/microsoft_synapse_batch_collector
 
-COPY batchcollector/microsoft_synapse_batch_collector /app/microsoft_synapse_batch_collector
+COPY microsoft_synapse_batch_collector /app/microsoft_synapse_batch_collector
 COPY .container/requirements.txt /tmp
 
 RUN python3 -m venv .venv \
