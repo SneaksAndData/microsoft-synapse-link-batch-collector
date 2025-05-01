@@ -21,6 +21,11 @@ class RunConfig:
 
     @classmethod
     def from_input_args(cls, input_args: argparse.Namespace) -> "RunConfig":
+        """
+         Parse input arguments into a RunConfig object.
+        :param input_args:
+        :return:
+        """
         return RunConfig(
             upload_bucket_name=input_args.upload_to_bucket,
             prefix=input_args.upload_to_prefix,
