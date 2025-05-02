@@ -50,6 +50,13 @@ jobs:
           use: true
           platforms: linux/arm64,linux/amd64
 
+      - name: Install Poetry and dependencies
+        uses: SneaksAndData/github-actions/install_poetry@v0.1.9
+        with:
+          skip_dependencies: true
+          export_requirements: true
+          requirements_path: ".container/requirements.txt"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.16.0
         with:
