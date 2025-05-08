@@ -75,29 +75,30 @@ def upload_batches(
         )
         associated_blobs = []
         for synapse_blob in source_client.list_blobs(
-            blob_path=synapse_prefix, filter_predicate=lambda blob: _valid_blob(blob_name=blob.name)
+            blob_path=synapse_prefix
         ):
-            with operation_time() as ot:
-                local_dirs = "/".join(["/tmp"] + synapse_blob.path.split("/")[:-1])
-                target_path = transform_path(synapse_blob, bucket, prefix)
+            if _valid_blob(synapse_blob.path):
+                with operation_time() as ot:
+                    local_dirs = "/".join(["/tmp"] + synapse_blob.path.split("/")[:-1])
+                    target_path = transform_path(synapse_blob, bucket, prefix)
 
-                logger.info(
-                    "Copying {synapse_file} to {target_path}",
-                    synapse_file=synapse_blob.to_hdfs_path(),
-                    target_path=target_path.to_hdfs_path(),
-                )
-                os.makedirs(local_dirs, exist_ok=True)
+                    logger.info(
+                        "Copying {synapse_file} to {target_path}",
+                        synapse_file=synapse_blob.to_hdfs_path(),
+                        target_path=target_path.to_hdfs_path(),
+                    )
+                    os.makedirs(local_dirs, exist_ok=True)
 
-                source_client.download_blobs(synapse_blob, "/tmp")
-                target_client.upload_blob(f"/tmp/{synapse_blob.path}", target_path, doze_period_ms=0)
-                os.remove(f"/tmp/{synapse_blob.path}")
+                    source_client.download_blobs(synapse_blob, "/tmp")
+                    target_client.upload_blob(f"/tmp/{synapse_blob.path}", target_path, doze_period_ms=0)
+                    os.remove(f"/tmp/{synapse_blob.path}")
 
-                logger.info(
-                    "Successfully copied {synapse_file} to {target_path}",
-                    synapse_file=synapse_blob.to_hdfs_path(),
-                    target_path=target_path.to_hdfs_path(),
-                )
-                associated_blobs.append(synapse_blob)
+                    logger.info(
+                        "Successfully copied {synapse_file} to {target_path}",
+                        synapse_file=synapse_blob.to_hdfs_path(),
+                        target_path=target_path.to_hdfs_path(),
+                    )
+                    associated_blobs.append(synapse_blob)
 
             metrics.gauge("batch.copy_duration", ot.elapsed / 1e9, tags={"file": synapse_blob.path})
 
