@@ -74,9 +74,7 @@ def upload_batches(
             threshold=threshold,
         )
         associated_blobs = []
-        for synapse_blob in source_client.list_blobs(
-            blob_path=synapse_prefix
-        ):
+        for synapse_blob in source_client.list_blobs(blob_path=synapse_prefix):
             if _valid_blob(synapse_blob.path):
                 with operation_time() as ot:
                     local_dirs = "/".join(["/tmp"] + synapse_blob.path.split("/")[:-1])
