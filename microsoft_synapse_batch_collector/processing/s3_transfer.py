@@ -16,6 +16,20 @@ from microsoft_synapse_batch_collector.models.uploaded_batch import UploadedBatc
 from microsoft_synapse_batch_collector.processing.synapse import filter_batches
 
 
+def _valid_blob(blob_name: str) -> bool:
+    """
+    Exclude blobs with Synapse metadata folders in path
+    """
+    for segment in ["OptionsetMetadata", "Microsoft.Athena.TrickleFeedService"]:
+        if segment in blob_name:
+            return False
+
+    if blob_name.endswith(".csv"):
+        return True
+
+    return False
+
+
 def transform_path(azure_path: AdlsGen2Path, bucket: str, prefix: str) -> S3Path:
     """
     Transforms Synapse Link location into S3 prefix
@@ -61,14 +75,16 @@ def upload_batches(
         )
         associated_blobs = []
         for synapse_blob in source_client.list_blobs(
-            blob_path=synapse_prefix, filter_predicate=lambda blob: blob.name.endswith(".csv")
+            blob_path=synapse_prefix, filter_predicate=lambda blob: _valid_blob(blob_name=blob.name)
         ):
             with operation_time() as ot:
                 local_dirs = "/".join(["/tmp"] + synapse_blob.path.split("/")[:-1])
                 target_path = transform_path(synapse_blob, bucket, prefix)
 
                 logger.info(
-                    "Copying {synapse_file} to {target_path}", synapse_file=synapse_blob.path, target_path=target_path
+                    "Copying {synapse_file} to {target_path}",
+                    synapse_file=synapse_blob.to_hdfs_path(),
+                    target_path=target_path.to_hdfs_path(),
                 )
                 os.makedirs(local_dirs, exist_ok=True)
 
