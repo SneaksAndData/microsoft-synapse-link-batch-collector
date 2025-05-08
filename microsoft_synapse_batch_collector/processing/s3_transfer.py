@@ -40,7 +40,12 @@ def upload_batches(
     """
     Process all files for the specified region, starting from dag_run_date
     """
-    logger.info("Running with source: {source}, target: {bucket}/{prefix}", source=source, bucket=bucket, prefix=prefix)
+    logger.info(
+        "Running with source: {source}, target: {bucket}/{prefix}",
+        source=source.to_hdfs_path(),
+        bucket=bucket,
+        prefix=prefix,
+    )
     start_from_batch = (datetime.utcnow() - timedelta(days=threshold)).strftime("%Y-%m-%dT%H.%M.%SZ")
 
     for synapse_prefix in filter_batches(
@@ -51,7 +56,7 @@ def upload_batches(
     ):
         logger.info(
             "Batch {batch_folder} is older than {threshold} days, archiving",
-            batch_folder=synapse_prefix,
+            batch_folder=synapse_prefix.to_hdfs_path(),
             threshold=threshold,
         )
         associated_blobs = []
@@ -73,8 +78,8 @@ def upload_batches(
 
                 logger.info(
                     "Successfully copied {synapse_file} to {target_path}",
-                    synapse_file=synapse_blob.path,
-                    target_path=target_path,
+                    synapse_file=synapse_blob.to_hdfs_path(),
+                    target_path=target_path.to_hdfs_path(),
                 )
                 associated_blobs.append(synapse_blob)
 
