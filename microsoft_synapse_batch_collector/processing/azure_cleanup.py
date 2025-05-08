@@ -21,7 +21,7 @@ def remove_batch(
     :param metrics: MetricsProvider
     :return:
     """
-    logger.info("Removing archived Synapse batch {batch}", batch=batch.source_path)
+    logger.info("Removing archived Synapse batch {batch}", batch=batch.source_path.path)
     metrics.gauge(
         metric_name="batch.total_blobs",
         metric_value=len(batch.blobs) - 1,
