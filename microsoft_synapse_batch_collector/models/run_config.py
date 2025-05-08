@@ -34,7 +34,7 @@ class RunConfig:
             synapse_source_path=AdlsGen2Path.from_hdfs_path(input_args.synapse_source_path)
             if input_args.synapse_source_path
             else AdlsGen2Path.from_hdfs_path(
-                f"{os.environ['SYNAPSE_STORAGE_CONTAINER_NAME']}@{os.environ['SYNAPSE_STORAGE_ACCOUNT_NAME']}.dfs.core.windows.net"
+                f"abfss://{os.environ['SYNAPSE_STORAGE_CONTAINER_NAME']}@{os.environ['SYNAPSE_STORAGE_ACCOUNT_NAME']}.dfs.core.windows.net"
             ),
             delete_processed=input_args.remove_processed_batches,
         )
