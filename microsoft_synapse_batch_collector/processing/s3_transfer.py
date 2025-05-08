@@ -96,9 +96,10 @@ def upload_batches(
                         synapse_file=synapse_blob.to_hdfs_path(),
                         target_path=target_path.to_hdfs_path(),
                     )
-                    associated_blobs.append(synapse_blob)
 
                 metrics.gauge("batch.copy_duration", ot.elapsed / 1e9, tags={"file": synapse_blob.path})
+
+            associated_blobs.append(synapse_blob)
 
         logger.info("Finished archiving batch {batch}", batch=synapse_prefix.path)
         # include model.json for the batch
