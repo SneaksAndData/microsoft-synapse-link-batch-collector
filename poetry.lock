@@ -2,13 +2,13 @@
 
 [[package]]
 name = "adapta"
-version = "3.3.20"
+version = "3.3.21"
 description = "Logging, data connectors, monitoring, secret handling and general lifehacks to make data people lives easier."
 optional = false
 python-versions = "<3.13,>=3.11"
 files = [
-    {file = "adapta-3.3.20-py3-none-any.whl", hash = "sha256:d82a25c9a6927bf9251e23241d5636621ae4a3f21c25341a42c5c566468f2122"},
-    {file = "adapta-3.3.20.tar.gz", hash = "sha256:664090a8582768b764a4f1f5a8e72f76f81a8c6cecccfa1e43486bc95684326c"},
+    {file = "adapta-3.3.21-py3-none-any.whl", hash = "sha256:601d6ff933590eaad7da1fe8de45f719c83e96736f28482df3a2fb750f4c178b"},
+    {file = "adapta-3.3.21.tar.gz", hash = "sha256:ae7a422a02ebbb554c291daec5651171f50f54684bd629fd750d9776135e2687"},
 ]
 
 [package.dependencies]
@@ -2792,4 +2792,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11, <3.13"
-content-hash = "b912373c6b70a67c37efaa9dbb21147a911e2cc81ec4207ce28c783a7b5eb5cb"
+content-hash = "3b8423efe9be276af0b638610ad637073f0b8efed992da62de4bc94349ce6b95"
