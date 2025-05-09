@@ -12,6 +12,7 @@ repository = 'https://github.com/SneaksAndData/microsoft-synapse-batch-collector
 python = ">=3.11, <3.13"
 adapta = { version = "^3.3.21", extras = ["aws", "azure", "storage", "datadog"] }
 dataclasses-json = ">=0.6,<0.7"
+azure-storage-file-datalake = "^12"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.1"

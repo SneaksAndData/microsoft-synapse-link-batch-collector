@@ -8,6 +8,7 @@ from adapta.metrics import MetricsProvider
 from adapta.storage.blob.azure_storage_client import AzureStorageClient
 from adapta.storage.models import AdlsGen2Path
 from adapta.utils.concurrent_task_runner import Executable, ConcurrentTaskRunner
+from azure.storage.filedatalake import DataLakeServiceClient, DataLakeDirectoryClient
 
 from microsoft_synapse_batch_collector.models.uploaded_batch import UploadedBatch
 
@@ -31,9 +32,9 @@ def remove_batch(
             logger.info("Deleting blob: {blob}", blob=blob.path)
             client.delete_leased_blob(blob)
             return True
-        else:
-            logger.info("Blob: {blob} qualifies for deletion. Skipping due to dry_run set to True", blob=blob.path)
-            return False
+
+        logger.info("Blob: {blob} qualifies for deletion. Skipping due to dry_run set to True", blob=blob.path)
+        return False
 
     logger.info("Removing archived Synapse batch {batch}", batch=batch.source_path.path)
     metrics.gauge(
@@ -56,5 +57,11 @@ def remove_batch(
     _ = ConcurrentTaskRunner(blob_delete_tasks, int(os.getenv("CLEANUP_THREADS", "128")), False).eager()
 
     # delete now-empty prefix - in case HNS is enabled, it will be retained as empty folder
+    # HNS API is not supported in adapta - thus hacking it together here for now
     if os.getenv("HNS_ENABLED", "0") == "1":
-        client.delete_blob(batch.source_path)
+        DataLakeServiceClient(
+            f"https://{batch.source_path.account}.dfs.core.windows.net",
+            credential=os.getenv(f"PROTEUS__{batch.source_path.account.upper()}_AZURE_STORAGE_ACCOUNT_KEY"),
+        ).get_directory_client(
+            os.getenv("SYNAPSE_STORAGE_CONTAINER_NAME"), batch.source_path.path.rstrip("/")
+        ).delete_directory()
