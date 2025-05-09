@@ -9,8 +9,9 @@ from adapta.logs import LoggerInterface
 from adapta.metrics import MetricsProvider
 from adapta.storage.blob.azure_storage_client import AzureStorageClient
 from adapta.storage.blob.s3_storage_client import S3StorageClient
-from adapta.storage.models import AdlsGen2Path, S3Path
+from adapta.storage.models import AdlsGen2Path, S3Path, DataPath
 from adapta.utils import operation_time
+from adapta.utils.concurrent_task_runner import Executable, ConcurrentTaskRunner
 
 from microsoft_synapse_batch_collector.models.uploaded_batch import UploadedBatch
 from microsoft_synapse_batch_collector.processing.synapse import filter_batches
@@ -54,6 +55,32 @@ def upload_batches(
     """
     Process all files for the specified region, starting from dag_run_date
     """
+
+    def _copy_blob(blob: DataPath) -> bool:
+        with operation_time() as ot:
+            local_dirs = "/".join(["/tmp"] + blob.path.split("/")[:-1])
+            target_path = transform_path(blob, bucket, prefix)
+
+            logger.info(
+                "Copying {synapse_file} to {target_path}",
+                synapse_file=blob.to_hdfs_path(),
+                target_path=target_path.to_hdfs_path(),
+            )
+            os.makedirs(local_dirs, exist_ok=True)
+
+            source_client.download_blobs(blob, "/tmp")
+            target_client.upload_blob(f"/tmp/{blob.path}", target_path, doze_period_ms=0)
+            os.remove(f"/tmp/{blob.path}")
+
+            logger.info(
+                "Successfully copied {synapse_file} to {target_path}",
+                synapse_file=blob.to_hdfs_path(),
+                target_path=target_path.to_hdfs_path(),
+            )
+
+        metrics.gauge("batch.copy_duration", ot.elapsed / 1e9, tags={"file": blob.path})
+        return True
+
     logger.info(
         "Running with source: {source}, target: {bucket}/{prefix}",
         source=source.to_hdfs_path(),
@@ -73,33 +100,20 @@ def upload_batches(
             batch_folder=synapse_prefix.to_hdfs_path(),
             threshold=threshold,
         )
-        associated_blobs = []
-        for synapse_blob in source_client.list_blobs(blob_path=synapse_prefix):
-            if _valid_blob(synapse_blob.path):
-                with operation_time() as ot:
-                    local_dirs = "/".join(["/tmp"] + synapse_blob.path.split("/")[:-1])
-                    target_path = transform_path(synapse_blob, bucket, prefix)
+        associated_blobs = list(source_client.list_blobs(blob_path=synapse_prefix))
 
-                    logger.info(
-                        "Copying {synapse_file} to {target_path}",
-                        synapse_file=synapse_blob.to_hdfs_path(),
-                        target_path=target_path.to_hdfs_path(),
-                    )
-                    os.makedirs(local_dirs, exist_ok=True)
-
-                    source_client.download_blobs(synapse_blob, "/tmp")
-                    target_client.upload_blob(f"/tmp/{synapse_blob.path}", target_path, doze_period_ms=0)
-                    os.remove(f"/tmp/{synapse_blob.path}")
-
-                    logger.info(
-                        "Successfully copied {synapse_file} to {target_path}",
-                        synapse_file=synapse_blob.to_hdfs_path(),
-                        target_path=target_path.to_hdfs_path(),
-                    )
-
-                metrics.gauge("batch.copy_duration", ot.elapsed / 1e9, tags={"file": synapse_blob.path})
-
-            associated_blobs.append(synapse_blob)
+        blob_copy_tasks = [
+            Executable(
+                func=_copy_blob,
+                args=[
+                    synapse_blob,
+                ],
+                alias=synapse_blob.path,
+            )
+            for synapse_blob in associated_blobs
+            if _valid_blob(synapse_blob.path)
+        ]
+        _ = ConcurrentTaskRunner(blob_copy_tasks, int(os.getenv("PROCESSING_THREADS", "128")), False).eager()
 
         logger.info("Finished archiving batch {batch}", batch=synapse_prefix.path)
 

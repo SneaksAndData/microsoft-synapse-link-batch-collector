@@ -54,7 +54,7 @@ def remove_batch(
         )
         for blob_to_delete in batch.blobs
     ]
-    _ = ConcurrentTaskRunner(blob_delete_tasks, int(os.getenv("CLEANUP_THREADS", "128")), False).eager()
+    _ = ConcurrentTaskRunner(blob_delete_tasks, int(os.getenv("PROCESSING_THREADS", "128")), False).eager()
 
     # delete now-empty prefix - in case HNS is enabled, it will be retained as empty folder
     # HNS API is not supported in adapta - thus hacking it together here for now
