@@ -8,7 +8,7 @@ from adapta.metrics import MetricsProvider
 from adapta.storage.blob.azure_storage_client import AzureStorageClient
 from adapta.storage.models import AdlsGen2Path
 from adapta.utils.concurrent_task_runner import Executable, ConcurrentTaskRunner
-from azure.storage.filedatalake import DataLakeServiceClient, DataLakeDirectoryClient
+from azure.storage.filedatalake import DataLakeServiceClient
 
 from microsoft_synapse_batch_collector.models.uploaded_batch import UploadedBatch
 
@@ -58,7 +58,7 @@ def remove_batch(
 
     # delete now-empty prefix - in case HNS is enabled, it will be retained as empty folder
     # HNS API is not supported in adapta - thus hacking it together here for now
-    if os.getenv("HNS_ENABLED", "0") == "1":
+    if os.getenv("HNS_ENABLED", "0") == "1" and not dry_run:
         DataLakeServiceClient(
             f"https://{batch.source_path.account}.dfs.core.windows.net",
             credential=os.getenv(f"PROTEUS__{batch.source_path.account.upper()}_AZURE_STORAGE_ACCOUNT_KEY"),
