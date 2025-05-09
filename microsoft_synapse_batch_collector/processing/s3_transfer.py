@@ -102,8 +102,6 @@ def upload_batches(
             associated_blobs.append(synapse_blob)
 
         logger.info("Finished archiving batch {batch}", batch=synapse_prefix.path)
-        # include model.json for the batch
-        associated_blobs.append(AdlsGen2Path.from_hdfs_path(f"{synapse_prefix.to_hdfs_path().rstrip('/')}/model.json"))
 
         yield UploadedBatch(
             source_path=synapse_prefix,
