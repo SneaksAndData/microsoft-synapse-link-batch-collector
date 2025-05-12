@@ -2,6 +2,7 @@
  Models for runtime config.
 """
 import argparse
+import os
 from dataclasses import dataclass
 
 from adapta.storage.models import AdlsGen2Path
@@ -30,6 +31,10 @@ class RunConfig:
             upload_bucket_name=input_args.upload_to_bucket,
             prefix=input_args.upload_to_prefix,
             age_threshold=input_args.batch_older_than_days,
-            synapse_source_path=AdlsGen2Path.from_hdfs_path(input_args.synapse_source_path),
+            synapse_source_path=AdlsGen2Path.from_hdfs_path(input_args.synapse_source_path)
+            if input_args.synapse_source_path
+            else AdlsGen2Path.from_hdfs_path(
+                f"abfss://{os.environ['SYNAPSE_STORAGE_CONTAINER_NAME']}@{os.environ['SYNAPSE_STORAGE_ACCOUNT_NAME']}.dfs.core.windows.net"
+            ),
             delete_processed=input_args.remove_processed_batches,
         )

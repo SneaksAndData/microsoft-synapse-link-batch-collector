@@ -34,9 +34,10 @@ def setup_args(parser: ArgumentParser | None = None) -> ArgumentParser:
     )
     parser.add_argument(
         "--synapse-source-path",
-        required=True,
+        required=False,
+        default=None,
         type=str,
-        help="Path to Synapse Incremental CSV batches, in a form of abfss://container@account.dfs.core.windows.net",
+        help="Path to Synapse Incremental CSV batches, in a form of abfss://container@account.dfs.core.windows.net. Will use SYNAPSE_STORAGE_ACCOUNT_NAME and SYNAPSE_STORAGE_CONTAINER_NAME environment variables, if not provided",
     )
     parser.add_argument(
         "--remove-processed-batches",
